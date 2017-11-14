@@ -34,10 +34,10 @@ figure(2);
 imagesc(bg2);
 
 
-z1_max=zeros(length(d));
-z2_max=zeros(length(d));
-z1_min=zeros(length(d));
-z2_min=zeros(length(d));
+z1_max=0;%zeros(length(d));
+z2_max=0;%zeros(length(d));
+z1_min=0;%zeros(length(d));
+z2_min=0;%zeros(length(d));
 % TIRAR OS ZEROS DO BACKGROUND - INTERPOLAÇAO
 
 for i = 1:length(d)
@@ -61,20 +61,20 @@ for i = 1:length(d)
     [r2,c2]=find(objs2);
     
     for j=1:length(r1)
-       if z1_max(i) < imgs1(r1(j), c1(j),i)
-           z1_max(i) = imgs1(r1(j), c1(j),i);
+       if z1_max < imgs1(r1(j), c1(j),9)
+           z1_max = imgs1(r1(j), c1(j),9);
        end 
-        if z1_min(i) > imgs1(r1(j), c1(j),i)
-           z1_min(i) = imgs1(r1(j), c1(j),i);
+        if z1_min > imgs1(r1(j), c1(j),9)
+           z1_min = imgs1(r1(j), c1(j),9);
        end 
     end
     
      for j=1:length(r2)
-       if z2_max(i) < imgs2(r2(j), c2(j),i)
-           z2_max(i) = imgs2(r2(j), c2(j),i);
+       if z2_max < imgs2(r2(j), c2(j),9)
+           z2_max = imgs2(r2(j), c2(j),9);
        end 
-        if z2_min(i) > imgs2(r2(j), c2(j),i)
-           z2_min(i) = imgs2(r2(j), c2(j),i);
+        if z2_min > imgs2(r2(j), c2(j),9)
+           z2_min = imgs2(r2(j), c2(j),9);
        end 
     end
     
@@ -110,17 +110,17 @@ end
 % imagesc(fg1(:,:,4));
 
 
-im1=imread(['D:\MEEC\4ºano\PIV\Project\NewData\maizena2\data_rgb\rgb_image1_2.png']);
+im1=imread(['D:\MEEC\4ºano\PIV\Project\NewData\maizena2\data_rgb\rgb_image1_7.png']);
 figure
 imshow(im1);
 hold on;
-rectangle('Position',stats1(1,4).BoundingBox, 'EdgeColor', 'r');
+rectangle('Position',stats1(1,9).BoundingBox, 'EdgeColor', 'r');
 
 
 
 % só para testar com uma imagem
-im1=imread(['D:\MEEC\4ºano\PIV\Project\NewData\maizena2\data_rgb\rgb_image1_3.png']);
-load(['D:\MEEC\4ºano\PIV\Project\NewData\maizena2\data_rgb\depth1_3.mat']);
+im1=imread(['D:\MEEC\4ºano\PIV\Project\NewData\maizena2\data_rgb\rgb_image1_7.png']);
+load(['D:\MEEC\4ºano\PIV\Project\NewData\maizena2\data_rgb\depth1_7.mat']);
 
 
 xyz=get_xyzasus(depth_array(:),[480 640],1:640*480,Depth_cam.K,1,0);
@@ -128,24 +128,23 @@ xyz=get_xyzasus(depth_array(:),[480 640],1:640*480,Depth_cam.K,1,0);
 rgbd=get_rgbd(xyz,im1,R_d_to_rgb,T_d_to_rgb,RGB_cam.K);
 cl=reshape(rgbd,480*640,3);
 p=pointCloud(xyz,'Color',cl);
-figure
-showPointCloud(p);
+% figure
+% showPointCloud(p);
 
 %points=round(bbox2points(stats(1,5).BoundingBox));
 
-umin=round(stats1(1,5).BoundingBox(1));
-umax=round(stats1(1,5).BoundingBox(1)+stats1(1,5).BoundingBox(3));
-vmin=round(stats1(1,5).BoundingBox(2));
-vmax=round(stats1(1,5).BoundingBox(2)+stats1(1,5).BoundingBox(4));
+umin=round(stats1(1,9).BoundingBox(1));
+umax=round(stats1(1,9).BoundingBox(1)+stats1(1,9).BoundingBox(3));
+vmin=round(stats1(1,9).BoundingBox(2));
+vmax=round(stats1(1,9).BoundingBox(2)+stats1(1,9).BoundingBox(4));
 
 xmin=double(depth_array(vmin,umin))*0.001/Depth_cam.K(1,1) * (umin-Depth_cam.K(1,3));
 ymin=double(depth_array(vmin,umin))*0.001/Depth_cam.K(2,2) * (vmin-Depth_cam.K(2,3));
 xmax=double(depth_array(vmax,umax))*0.001/Depth_cam.K(1,1) * (umax-Depth_cam.K(1,3));
 ymax=double(depth_array(vmax,umax))*0.001/Depth_cam.K(2,2) * (vmax-Depth_cam.K(2,3));
 
-zmax=z1_max(5)*0.001;
-zmin=z1_min(5)*0.001;
-figure
+zmax=z1_max*0.001;
+zmin=z1_min*0.001;
 
 
 region=[ xmin ymin zmin;
@@ -158,15 +157,12 @@ region=[ xmin ymin zmin;
         xmax ymax zmax];
 region_color=[255 0 0];
 color=[%cl;
-       repmat(region_color,8,1)];
+repmat(region_color,8,1)];
 p_region=pointCloud(region, 'Color', color);
-hold on
+
+figure
 axis equal
-plot(alphaShape(region));
+plot(alphaShape(region),'FaceColor', 'none', 'FaceAlpha',1.0);
+hold on
 
-
-
-
-%k=boundary(p_region);
-
-%trisurf(k,p_region(:,1),p_region(:,2),p_region(:,3),'Facecolor','red','FaceAlpha',0.1)
+pcshow(pcmerge(p,p_region,0.001));
