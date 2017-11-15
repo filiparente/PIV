@@ -13,16 +13,17 @@ for i=1:length(d),
     dep1=depth_array;
     load(['D:\MEEC\4ºano\PIV\Project\NewData\maizena2\data_rgb\depth2_' d(i).name(12:end-3 ) 'mat'])
     dep2=depth_array;
-    imgs1(:,:,i) = double(dep1);%/1000 <-- caso quisessemos já obter em metros;
+    imgs1(:,:,i) = double(dep1);
     imgs1(:,:,i)=regionfill(imgs1(:,:,i),imgs1(:,:,i) == 0);
-    imgs2(:,:,i) = double(dep2);%/1000;  
+    imgs2(:,:,i) = double(dep2);
     
 end
 
 bg1q=quantile(imgs1,0.75,3);
 bg2q=quantile(imgs2,0.75,3);
 
-xyz=cell(1,length(d));% para conseguirmos obter xyz de todos os objetos em todas as imagens
+xyz=cell(1,length(d));% usar cell arraus para conseguirmos obter xyz de todos os objetos em todas as imagens 
+                      %porque o tamanho vai variar consoante a imagem
 %background=0
 for i = 1:length(d)
     
@@ -55,12 +56,14 @@ for i = 1:length(d)
     %finding object with counts above region_counts
     labelobj=find(counts1(2:end)>region_counts); %we start counts1 in index 2 because index 1 corresponds to background
     
-    xyz{i}=cell(3,length(labelobj));
+    
+    % getting the 3D coordinates of each pixel
+    xyz{i}=cell(3,length(labelobj)); 
     for k=1:length(labelobj)
         
         r=cell(1,length(labelobj)); 
         c=cell(1,length(labelobj));
-        [r{k},c{k}]=find(L==labelobj(k)); %getting the coordinates of each object pixel
+        [r{k},c{k}]=find(L==labelobj(k)); %getting the coordinates in the image of each object pixel
 
        %passar para 3D 
         for l=1:length(r{k})
