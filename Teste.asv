@@ -14,16 +14,18 @@ for i=1:length(d),
     load(['D:\MEEC\4ºano\PIV\Project\NewData\maizena2\data_rgb\depth2_' d(i).name(12:end-3 ) 'mat'])
     dep2=depth_array;
     imgs1(:,:,i) = double(dep1);
-    imgs1(:,:,i)=ReplaceZeros(imgs1(:,:,i)); % remover zeros 
+    
+    % remover zeros - criar funcao para isto
+    imgs1(:,:,i)=ReplaceZeros(imgs1(:,:,i));
+    %imgs1(:,:,i)=regionfill(imgs1(:,:,i),imgs1(:,:,i) == 0);
     imgs2(:,:,i) = double(dep2);
-    imgs2(:,:,i)=ReplaceZeros(imgs2(:,:,i));
     
 end
 
 bg1q=quantile(imgs1,0.75,3);
 bg2q=quantile(imgs2,0.75,3);
 
-
+%%
 
 xyz=cell(1,length(d));% usar cell arraus para conseguirmos obter xyz de todos os objetos em todas as imagens 
                       %porque o tamanho vai variar consoante a imagem
@@ -54,11 +56,11 @@ for i = 1:length(d)
     bw= imerode(fg1q(:,:,i),SE);
     bw= imdilate(bw,SE);
     
-    L = bwlabel(bw);
-    counts1=histcounts(L(:),max(L(:)));  % counts for the labels
-    %finding object with counts above region_counts
-    labelobj=find(counts1(2:end)>region_counts); %we start counts1 in index 2 because index 1 corresponds to background
-    
+%     L = bwlabel(bw);
+%     counts1=histcounts(L(:),max(L(:)));  % counts for the labels
+%     %finding object with counts above region_counts
+%     labelobj=find(counts1(2:end)>region_counts); %we start counts1 in index 2 because index 1 corresponds to background
+%     
 %     
 %     % getting the 3D coordinates of each pixel
 %     xyz{i}=cell(3,length(labelobj)); 
