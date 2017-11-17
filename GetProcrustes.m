@@ -1,12 +1,15 @@
-function tr = GetProcrustes(im1, im2,dep1,dep2)
-    % READ IMAGES and GENERATE POINT CLOUDS
-
+function tr = GetProcrustes(im1, im2,dep1,dep2,DepthK, RGBK, R_d_to_rgb,T_d_to_rgb)
+    %para DepthK mandar Depth_Cam.K
+    %para RGBK mandar RGB_cam.K
+    %usa as funcoes xyzsus e get_rgbd do lab1 do prof
+    
+    
     %dep2(find(dep2(:)>4000))=0;
-    xyz1=get_xyzasus(dep1(:),[480 640],(1:640*480)', Depth_cam.K,1,0);
-    xyz2=get_xyzasus(dep2(:),[480 640],(1:640*480)', Depth_cam.K,1,0);
+    xyz1=get_xyzasus(dep1(:),[480 640],(1:640*480)', DepthK,1,0);
+    xyz2=get_xyzasus(dep2(:),[480 640],(1:640*480)', DepthK,1,0);
     %REGISTER RGB TO DEPTH
-    rgbd1 = get_rgbd(xyz1, im1, R_d_to_rgb, T_d_to_rgb, RGB_cam.K);
-    rgbd2 = get_rgbd(xyz2, im2, R_d_to_rgb, T_d_to_rgb, RGB_cam.K);
+    rgbd1 = get_rgbd(xyz1, im1, R_d_to_rgb, T_d_to_rgb, RGBK);
+    rgbd2 = get_rgbd(xyz2, im2, R_d_to_rgb, T_d_to_rgb, RGBK);
     figure(1);imagesc(rgbd1 );
     figure(2);imagesc(rgbd2 );
     pc1=pointCloud(xyz1,'Color',reshape(rgbd1,[480*640 3]));
