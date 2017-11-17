@@ -59,32 +59,34 @@ for i = 1:length(d)
     %finding object with counts above region_counts
     labelobj=find(counts1(2:end)>region_counts); %we start counts1 in index 2 because index 1 corresponds to background
     
-%     
-%     % getting the 3D coordinates of each pixel
-%     xyz{i}=cell(3,length(labelobj)); 
-%     for k=1:length(labelobj)
-%         
-%         r=cell(1,length(labelobj)); 
-%         c=cell(1,length(labelobj));
-%         [r{k},c{k}]=find(L==labelobj(k)); %getting the coordinates in the image of each object pixel
-% 
-%        %passar para 3D 
-%         for l=1:length(r{k})
-%             xyz{i}{3,k}(l) =imgs1(r{k}(l),c{k}(l),5)*0.001; % Convert to meters
-%         end
-%         
-%         xyz{i}{3,k}=xyz{i}{3,k}';
-%         xyz{i}{1,k} = (xyz{i}{3,k}/Depth_cam.K(1,1)) .*(c{k}-Depth_cam.K(1,3)) ;
-%         xyz{i}{2,k} = (xyz{i}{3,k}/Depth_cam.K(2,2)) .*(r{k}-Depth_cam.K(2,3)) ;  
-%         
-%         clear r;
-%     	clear c;     
-%         
-%     end
-%  
+    
+    % getting the 3D coordinates of each pixel
+            xyz{i}=cell(3,length(labelobj)); 
+            for k=1:length(labelobj)
+
+                r=cell(1,length(labelobj)); 
+                c=cell(1,length(labelobj));
+                [r{k},c{k}]=find(L==labelobj(k)); %getting the coordinates in the image of each object pixel
+
+               %passar para 3D 
+                for l=1:length(r{k})
+                    xyz{i}{3,k}(l) =imgs1(r{k}(l),c{k}(l),i )*0.001; % Convert to meters
+                end
+
+                xyz{i}{3,k}=xyz{i}{3,k}';
+                xyz{i}{1,k} = (xyz{i}{3,k}/Depth_cam.K(1,1)) .*(c{k}-Depth_cam.K(1,3)) ;
+                xyz{i}{2,k} = (xyz{i}{3,k}/Depth_cam.K(2,2)) .*(r{k}-Depth_cam.K(2,3)) ;  
+
+                clear r;
+                clear c;     
+
+            end
+ 
     % to see the images while the program is running
-    imagesc(bw);
-    colormap(gray);
-    pause(1);
+%     imagesc(bw);
+%     colormap(gray);
+%     pause(1);
    
 end
+
+
