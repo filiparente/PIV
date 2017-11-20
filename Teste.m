@@ -1,4 +1,4 @@
-d=dir('D:\MEEC\4ºano\PIV\Project\NewData\maizena2\data_rgb\rgb_image1_*'); %getting all the file in this directory
+d=dir('D:\MEEC\4ï¿½ano\PIV\Project\NewData\maizena2\data_rgb\rgb_image1_*'); %getting all the file in this directory
 % O stor disse que ia mudar os nomes da imagem para dar por ordem!
 
 %NAO ESQUECER DE MUDAR DIRETORIA CONSOANTE O PC
@@ -9,9 +9,9 @@ imgs2 = zeros(480,640,length(d));
 
 
 for i=1:length(d),
-    load(['D:\MEEC\4ºano\PIV\Project\NewData\maizena2\data_rgb\depth1_' d(i).name(12:end-3) 'mat'])
+    load(['D:\MEEC\4ï¿½ano\PIV\Project\NewData\maizena2\data_rgb\depth1_' d(i).name(12:end-3) 'mat'])
     dep1=depth_array;
-    load(['D:\MEEC\4ºano\PIV\Project\NewData\maizena2\data_rgb\depth2_' d(i).name(12:end-3 ) 'mat'])
+    load(['D:\MEEC\4ï¿½ano\PIV\Project\NewData\maizena2\data_rgb\depth2_' d(i).name(12:end-3 ) 'mat'])
     dep2=depth_array;
     imgs1(:,:,i) = double(dep1);
     imgs1(:,:,i)=ReplaceZeros(imgs1(:,:,i)); % remover zeros 
@@ -30,11 +30,11 @@ bg2q=quantile(imgs2,0.75,3);
 % camera 1 in this case
 
 %Procrustes is applied to a pair of images:
-im1=imread('D:\MEEC\4ºano\PIV\Project\NewData\maizena2\data_rgb\rgb_image1_3.png');
-im2=imread('D:\MEEC\4ºano\PIV\Project\NewData\maizena2\data_rgb\rgb_image2_3.png');
-load('D:\MEEC\4ºano\PIV\Project\NewData\maizena2\data_rgb\depth1_3.mat')
+im1=imread('D:\MEEC\4ï¿½ano\PIV\Project\NewData\maizena2\data_rgb\rgb_image1_3.png');
+im2=imread('D:\MEEC\4ï¿½ano\PIV\Project\NewData\maizena2\data_rgb\rgb_image2_3.png');
+load('D:\MEEC\4ï¿½ano\PIV\Project\NewData\maizena2\data_rgb\depth1_3.mat')
 dep1=depth_array;
-load('D:\MEEC\4ºano\PIV\Project\NewData\maizena2\data_rgb\depth2_3.mat')
+load('D:\MEEC\4ï¿½ano\PIV\Project\NewData\maizena2\data_rgb\depth2_3.mat')
 dep2=depth_array;
 
 transf=GetProcrustes(im1,im2,dep1,dep2,Depth_cam.K, RGB_cam.K, R_d_to_rgb,T_d_to_rgb); %returns a structure with the transformation
@@ -150,7 +150,7 @@ for i=1:length(d) %for every image
                continue;
            end
 
-           good_ind=good_ind+1; % só queremos adicionar aos limits se o size for suficientemente grande
+           good_ind=good_ind+1; % sï¿½ queremos adicionar aos limits se o size for suficientemente grande
            xinto=xyz2{i}{j}(ind,1);
            yinto=xyz2{i}{j}(ind,2);     
 
@@ -166,9 +166,9 @@ for i=1:length(d) %for every image
 end
 
 %%
-% só para testar com uma imagem
-im1=imread(['D:\MEEC\4ºano\PIV\Project\NewData\maizena2\data_rgb\rgb_image1_10.png']);
-load(['D:\MEEC\4ºano\PIV\Project\NewData\maizena2\data_rgb\depth1_10.mat']);
+% sï¿½ para testar com uma imagem
+im1=imread(['D:\MEEC\4ï¿½ano\PIV\Project\NewData\maizena2\data_rgb\rgb_image1_10.png']);
+load(['D:\MEEC\4ï¿½ano\PIV\Project\NewData\maizena2\data_rgb\depth1_10.mat']);
 
 
 xyz6=get_xyzasus(depth_array(:),[480 640],1:640*480,Depth_cam.K,1,0);
