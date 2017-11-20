@@ -99,20 +99,33 @@ end
 clear depth
 depth=cell(1,length(d));
 Threshold=20;
+Threshold = 20;
+good_inds = 1;
 
 for j=1:length(d) 
     depth{j}=cell(1,length(xyz2{j}));
     for k=1:length(xyz2{j}) %for each object
         nbins=(max(xyz2{j}{k}(:,3))-min(xyz2{j}{k}(:,3)))*100;
+for j=1:length(d)  % for each image
+    depth{j}=cell(1,length(xyz2{j})); %each image has a cell which size is the number of objects
+    for k=1:length(xyz2{j}) %for each object; k also represents how many histograms
+        
+        nbins=(max(xyz2{j}{k}(:,3))-min(xyz2{j}{k}(:,3)))*100; %number of columns for each histogram depends on width
    
         [counts,edges]=histcounts(xyz2{j}{k}(:,3),round(nbins));
         %obj=1;
+        [counts,edges]=histcounts(xyz2{j}{k}(:,3),round(nbins)); %histogram; counts is the number of pixels; edges are the limits on the depth for each column
+        
+        if(max(counts)*0.0001 > Threshold)  %adaptative threshold, with maximum ???
+            Threshold = max(counts)*0.0001;
+            
         flag=0; % no object found
         
         for i=1:length(counts)
 
             if counts(i) > Threshold && flag==0
                 depth{j}{k}(1) = edges(i); %depth(1)= z_min
+                depth{j}{k}{good_inds}(1) = edges(i); %depth(1)= z_min
                 flag=1; %object found
 
             end
@@ -120,11 +133,14 @@ for j=1:length(d)
             if flag && (counts(i) < Threshold || i==length(counts)) %object found and below threshold
                  if i==length(counts)
                      depth{j}{k}(2) = edges(end);
+                     depth{j}{k}{good_inds}(2) = edges(end);
                  else
                     depth{j}{k}(2) = edges(i); %depth(2) = z_max
+                    depth{j}{k}{good_inds}(2) = edges(i); %depth(2) = z_max
                  end
                 flag=0; %object is over
                 k=k+1;
+                good_inds=good_inds+1;
             end  
         end  
     end
@@ -134,6 +150,7 @@ end
 
 %%
 t_size=300;%threshold para eliminar objs demasiado pequenos que sobrevivem ao histograma
+t_size=300; %threshold to ignore objects too small that survived to the histogram
 clear limits
 limits=cell(1,length(d));
 
@@ -141,17 +158,24 @@ for i=1:length(d) %for every image
     good_ind=0;
     for j=1:length(xyz2{i}) %objects      
         for k=1:length(depth{i}) %% VERIFICAR ISTO
+    for j=1:length(xyz2{i}) %histograms      
+        for k=1:length(depth{i}{j})
             
            ind1 = find(xyz2{i}{j}(:,3)>=depth{i}{k}(1));
            ind2 = find(xyz2{i}{j}(:,3)<= depth{i}{k}(2));
            ind = intersect(ind1,ind2); % save the labels of the xyz with z coordinates between the max and the min found before
+           ind1 = find( xyz2{i}{j}(:,3) >= depth{i}{j}{k}(1) ); %depth{i}{j}{k} means in image i, histogram j and identified object k; (1) is z_min for that object
+           ind2 = find( xyz2{i}{j}(:,3) <= depth{i}{j}{k}(2) ); %(2) is zmax
+           ind  = intersect(ind1,ind2); % save the labels of the xyz with z coordinates between the max and the min found before
 
            if(size(ind)<t_size)
+           if(size(ind) < t_size)
                continue;
            end
 
            good_ind=good_ind+1; % s� queremos adicionar aos limits se o size for suficientemente grande
            xinto=xyz2{i}{j}(ind,1);
+           good_ind=good_ind+1; % we only add to limits the objects that satisfy the requirement for the threshold size          xinto=xyz2{i}{j}(ind,1);
            yinto=xyz2{i}{j}(ind,2);     
 
            limits{i}{good_ind}(1)=min(xinto);
@@ -160,6 +184,12 @@ for i=1:length(d) %for every image
            limits{i}{good_ind}(4)=max(yinto);
            limits{i}{good_ind}(5)=depth{i}{k}(1);
            limits{i}{good_ind}(6)=depth{i}{k}(2);
+           limits{i}{good_ind}(1)=min(xinto); %xmin 
+           limits{i}{good_ind}(2)=max(xinto); %xmax
+           limits{i}{good_ind}(3)=min(yinto); %ymin
+           limits{i}{good_ind}(4)=max(yinto); %ymax
+           limits{i}{good_ind}(5)=depth{i}{j}{k}(1); %zmin
+           limits{i}{good_ind}(6)=depth{i}{j}{k}(2); %zmax
            
         end
    end
