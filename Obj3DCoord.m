@@ -1,4 +1,4 @@
-function xyzCam = Obj3DCoord(labelobj,k,L,img,K)
+function [r c xyzCam] = Obj3DCoord(labelobj,k,L,img,K)
     
 [r,c]=find(L==labelobj(k)); %getting the coordinates in the image of each object pixel
 
@@ -10,6 +10,5 @@ end
 
 xyzCam(:,1)= (xyzCam(:,3)/K(1,1)) .*(c-K(1,3)) ;
 xyzCam(:,2) = (xyzCam(:,3)/K(2,2)) .*(r-K(2,3)) ;
-
 
 end
