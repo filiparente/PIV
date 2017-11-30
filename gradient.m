@@ -17,7 +17,6 @@ end
 
 Im=mat2gray(depthimg); %converting to intensity image
 [~,threshold]=edge(Im,'sobel');
-threshold
 BW=edge(Im,'sobel',factor*threshold); %binary image - 1s=edges
 
 
