@@ -167,34 +167,36 @@ for k=1:Niter_ransac-4
     if length(inliers)>length(best_inliers)
         best_inliers=inliers;
     end 
-    inliers=[];
- 
+    %inliers=[];
+    clear inliers;
 end
+
+clear uv_fromd1;
 
 %check if the best inliers in 3d are good in the 2d rgb image
 for i=1:length(best_inliers)
-    P3d_2=[xyz_keypts2(best_inliers(i),1); xyz_keypts2(best_inliers(i),2); xyz_keypts2(best_inliers(i),3); 1]; 
+    P3d_2=[xyz2(best_inliers(i),1); xyz2(best_inliers(i),2); xyz2(best_inliers(i),3); 1]; 
     P2d_2=RGB_cam.K*[R_d_to_rgb T_d_to_rgb]*P3d_2;    
-    uv_fromd2g(i,1)=P2d_2(1)/P2d_2(3);
-    uv_fromd2g(i,2)=P2d_2(2)/P2d_2(3);
+    uv_fromd2(i,1)=P2d_2(1)./P2d_2(3);
+    uv_fromd2(i,2)=P2d_2(2)./P2d_2(3);
 end
 %eck if the best inliers in 3d are good in the 2d rgb image
 for i=1:length(best_inliers)
-    P3d_2=[xyz_keypts1(best_inliers(i),1); xyz_keypts1(best_inliers(i),2); xyz_keypts1(best_inliers(i),3); 1]; 
+    P3d_2=[xyz1(best_inliers(i),1); xyz1(best_inliers(i),2); xyz1(best_inliers(i),3); 1]; 
     P2d_2=RGB_cam.K*[R_d_to_rgb T_d_to_rgb]*P3d_2;    
-    uv_fromd1g(i,1)=P2d_2(1)/P2d_2(3);
-    uv_fromd1g(i,2)=P2d_2(2)/P2d_2(3);
+    uv_fromd1(i,1)=P2d_2(1)./P2d_2(3);
+    uv_fromd1(i,2)=P2d_2(2)./P2d_2(3);
 end
 
 figure
 imshow(imgray1);
 hold on;
-scatter(uv_fromd1g(:,1),uv_fromd1g(:,2),'*');
+scatter(uv_fromd1(:,1),uv_fromd1(:,2),'*');
 
 figure
 imshow(imgray2);
 hold on;
-scatter(uv_fromd2g(:,1),uv_fromd2g(:,2),'*');
+scatter(uv_fromd2(:,1),uv_fromd2(:,2),'*');
 %%
 %recompute R and T using the model with more inliers?
 [d,xx,tr]=procrustes(xyz_keypts1(best_inliers,:),xyz_keypts2(best_inliers,:),'scaling',false,'reflection',false);
