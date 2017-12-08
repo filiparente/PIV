@@ -1,4 +1,4 @@
-function [R T] = RT_c2toc1(peak_thresh,edge_thresh, match_thresh, ransac_thresh, Ninter_ransac,imgray1,imgray2, meddep1, meddep2)
+function [R T] = RT_c2toc1(peak_thresh,edge_thresh, match_thresh, ransac_thresh, Niter_ransac,imgray1,imgray2, meddep1, meddep2)
     load('CalibrationData.mat');
     load('calib_asus.mat');
 
@@ -14,8 +14,8 @@ function [R T] = RT_c2toc1(peak_thresh,edge_thresh, match_thresh, ransac_thresh,
     uv1rgb(:,2)= F1(2,matches(1,:)) ;
     uv2rgb(:,2) = F2(2,matches(2,:)) ;
 
-    xyz1 = get_xyzasus(meddep1,[480 640],1:640*480,Depth_cam.K,1,0);
-    xyz2 = get_xyzasus(meddep2,[480 640],1:640*480,Depth_cam.K,1,0);
+    xyz1 = get_xyzasus(meddep1 (:),[480 640],1:640*480,Depth_cam.K,1,0);
+    xyz2 = get_xyzasus(meddep2 (:),[480 640],1:640*480,Depth_cam.K,1,0);
 
     P3d_1=[xyz1(:,1)'; xyz1(:,2)'; xyz1(:,3)'; ones(1,length(xyz1(:,1)))]; 
     P2d_1=RGB_cam.K*[R_d_to_rgb T_d_to_rgb]*P3d_1;    

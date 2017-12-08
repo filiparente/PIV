@@ -169,7 +169,7 @@ for i = 1:length(d)
     %clearing variables
     xyz=[];
     goodxyz=[];
-    goodxyz21=[];
+    goodxyz=[];
     row=[];
     col=[];   
 %  
@@ -188,10 +188,9 @@ finalbox=cell(length(d),1);
 
 for img = 1:length(d)
     %checking if objects intercep
-    finalbox{img}={};
     for obj1=1:length(limits{img,1})
         for obj2=1:length(limits{img,2})
-
+            
             [bool,p]= IsIntercept(limits{img,1}{obj1},limits{img,2}{obj2});
             if(bool==1)
                 finalbox{img} = [finalbox{img} p];
@@ -204,9 +203,10 @@ end
 
 %% testing
 img=10;
+cam=1;
 obj=1;  
 i=img;
-xmin=finalobj{img,cam}{1,obj}(1);
+xmin=limits{img,cam}{1,obj}(1);
             xmax=limits{img,cam}{1,obj}(2);
             ymin=limits{img,cam}{1,obj}(3);
             ymax=limits{img,cam}{1,obj}(4);

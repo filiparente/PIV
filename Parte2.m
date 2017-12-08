@@ -1,4 +1,4 @@
-d=dir('D:\MEEC\4ºano\PIV\Project\NewData\maizena4\data_rgb\rgb_image1_*'); %getting all the file in this directory
+d=dir('D:\MEEC\4ºano\PIV\Project\NewData\lab1\rgb_image1_*'); %getting all the file in this directory
 % O stor disse que ia mudar os nomes da imagem para dar por ordem!
 
 %getting the background image
@@ -8,44 +8,57 @@ ims2=[];
 imsd1=[];
 imsd2=[];
 for i=1:length(d),
-    im1=rgb2gray(imread((['D:\MEEC\4ºano\PIV\Project\NewData\maizena4\data_rgb\rgb_image1_' d(i).name(12:end-3) 'png'])));
+    im1=rgb2gray(imread((['D:\MEEC\4ºano\PIV\Project\NewData\lab1\rgb_image1_' d(i).name(12:end-3) 'png'])));
     ims1=[ims1 im1(:)];
-    im2=rgb2gray(imread((['D:\MEEC\4ºano\PIV\Project\NewData\maizena4\data_rgb\rgb_image2_' d(i).name(12:end-3) 'png'])));
+    im2=rgb2gray(imread((['D:\MEEC\4ºano\PIV\Project\NewData\lab1\rgb_image2_' d(i).name(12:end-3) 'png'])));
     ims2=[ims2 im2(:)];
-    load(['D:\MEEC\4ºano\PIV\Project\NewData\maizena4\data_rgb\depth1_' d(i).name(12:end-3) 'mat'])
+    load(['D:\MEEC\4ºano\PIV\Project\NewData\lab1\depth1_' d(i).name(12:end-3) 'mat'])
     imsd1=[imsd1 depth_array(:)];
-    load(['D:\MEEC\4ºano\PIV\Project\NewData\maizena4\data_rgb\depth2_' d(i).name(12:end-3) 'mat'])
+    load(['D:\MEEC\4ºano\PIV\Project\NewData\lab1\depth2_' d(i).name(12:end-3) 'mat'])
     imsd2=[imsd2 depth_array(:)];
 end
 
 medim1=median(double(ims1),2);
 medim2=median(double(ims2),2);
-% medim1=quantile(double(ims1),0.75,2);
-% medim2=quantile(double(ims2),0.75,2);
+%  medim1=quantile(double(ims1),0.75,2);
+%  medim2=quantile(double(ims2),0.75,2);
 imgray1=(uint8(reshape(medim1,[480 640])));
 imgray2=(uint8(reshape(medim2,[480 640])));
 
 meddep1=median(double(imsd1),2);
+% meddep1=quantile(double(imsd1),0.75,2);
 bgimd1=reshape(meddep1,[480 640]);
 meddep2=median(double(imsd2),2);
+% meddep2=quantile(double(imsd2),0.75,2);
 bgimd2=reshape(meddep2,[480 640]);
+% %%
+% d=dir('D:\MEEC\4ºano\PIV\Project\NewData\maizena4\data_rgb\rgb_image1_*'); 
+% i=1;
+% im1=imread(['D:\MEEC\4ºano\PIV\Project\NewData\maizena4\data_rgb\rgb_image1_' d(i).name(12:end-3) 'png']);
+% imgray1=rgb2gray(im1);
+%     im2=imread(['D:\MEEC\4ºano\PIV\Project\NewData\maizena4\data_rgb\rgb_image2_' d(i).name(12:end-3) 'png']);
+%     imgray2=rgb2gray(im2);
+%     load(['D:\MEEC\4ºano\PIV\Project\NewData\maizena4\data_rgb\depth1_' d(i).name(12:end-3) 'mat'])
+%     meddep1=depth_array;
+%     load(['D:\MEEC\4ºano\PIV\Project\NewData\maizena4\data_rgb\depth2_' d(i).name(12:end-3) 'mat'])
+%     meddep2=depth_array;
 
 %%
 %MEXER NOS PARAMETROS PARA VER O QUE DA MELHOR
 peak_thresh=0; % increase to limit ; default is 0
-edge_thresh=10; %decrease to limit ; default is 10
+edge_thresh=20; %decrease to limit ; default is 10
 
 [F1,d1]=vl_sift(single(imgray1),'PeakThresh', peak_thresh,'edgethresh', edge_thresh);
 [F2,d2]=vl_sift(single(imgray2),'PeakThresh', peak_thresh,'edgethresh', edge_thresh);
 
-%%
-imshow(imgray1);
-perm = randperm(size(F2,2)) ;
-sel = perm(1:50) ;
-h1 = vl_plotframe(F2(:,sel)) ;
-h2 = vl_plotframe(F2(:,sel)) ;
-set(h1,'color','k','linewidth',3) ;
-set(h2,'color','y','linewidth',2) ;
+% %%
+% imshow(imgray1);
+% perm = randperm(size(F2,2)) ;
+% sel = perm(1:50) ;
+% h1 = vl_plotframe(F2(:,sel)) ;
+% h2 = vl_plotframe(F2(:,sel)) ;
+% set(h1,'color','k','linewidth',3) ;
+% set(h2,'color','y','linewidth',2) ;
 
 %%
 %finding matches 
@@ -54,22 +67,22 @@ match_thresh=1.5;%increase to limit matches ; default is 1.5
 [matches, scores]= vl_ubcmatch(d1,d2,match_thresh);
 
 %%
-figure(2) ; clf ;
-imagesc(cat(2, imgray1,imgray2)) ;
-
-u1 = F1(1,matches(1,:)) ;
-u2 = F2(1,matches(2,:)) + size(imgray1,2) ;
-v1 = F1(2,matches(1,:)) ;
-v2 = F2(2,matches(2,:)) ;
-
-hold on ;
-h = line([u1 ; u2], [v1 ; v2]) ;
-set(h,'linewidth', 1, 'color', 'b') ;
-
-vl_plotframe(F1(:,matches(1,:))) ;
-F2(1,:) = F2(1,:) + size(imgray1,2) ;
-vl_plotframe(F2(:,matches(2,:))) ;
-axis image off ;
+% figure(2) ; clf ;
+% imagesc(cat(2, imgray1,imgray2)) ;
+% 
+% u1 = F1(1,matches(1,:)) ;
+% u2 = F2(1,matches(2,:)) + size(imgray1,2) ;
+% v1 = F1(2,matches(1,:)) ;
+% v2 = F2(2,matches(2,:)) ;
+% 
+% hold on ;
+% h = line([u1 ; u2], [v1 ; v2]) ;
+% set(h,'linewidth', 1, 'color', 'b') ;
+% 
+% vl_plotframe(F1(:,matches(1,:))) ;
+% F2(1,:) = F2(1,:) + size(imgray1,2) ;
+% vl_plotframe(F2(:,matches(2,:))) ;
+% axis image off ;
 
 % %% ESTA MAL
 % 
@@ -112,8 +125,8 @@ uv2rgb(:,1)= F2(1,matches(2,:)) ;
 uv1rgb(:,2)= F1(2,matches(1,:)) ;
 uv2rgb(:,2) = F2(2,matches(2,:)) ;
 
-xyz1 = get_xyzasus(meddep1,[480 640],1:640*480,Depth_cam.K,1,0);
-xyz2 = get_xyzasus(meddep2,[480 640],1:640*480,Depth_cam.K,1,0);
+xyz1 = get_xyzasus(meddep1(:),[480 640],1:640*480,Depth_cam.K,1,0);
+xyz2 = get_xyzasus(meddep2(:),[480 640],1:640*480,Depth_cam.K,1,0);
 
 P3d_1=[xyz1(:,1)'; xyz1(:,2)'; xyz1(:,3)'; ones(1,length(xyz1(:,1)))]; 
 P2d_1=RGB_cam.K*[R_d_to_rgb T_d_to_rgb]*P3d_1;    
@@ -139,7 +152,7 @@ xyz_keypts2=xyz2(bestuv2,:);
 
 %%
 %how to find the threshold??
-ransac_thresh=0.1; %using 10 cm for now
+ransac_thresh=0.05; %using 10 cm for now
 Niter_ransac=100;
 
 best_inliers=[];
@@ -165,12 +178,13 @@ for k=1:Niter_ransac-4
     %keep tranformation and inliers if there are more inliers than the
     %maximum find until now
     if length(inliers)>length(best_inliers)
+        best_inliers=[];
         best_inliers=inliers;
     end 
     inliers=[];
  
 end
-
+%%
 %check if the best inliers in 3d are good in the 2d rgb image
 for i=1:length(best_inliers)
     P3d_2=[xyz_keypts2(best_inliers(i),1); xyz_keypts2(best_inliers(i),2); xyz_keypts2(best_inliers(i),3); 1]; 
@@ -192,32 +206,36 @@ hold on;
 scatter(uv_fromd1g(:,1),uv_fromd1g(:,2),'*');
 
 figure
-imshow(imgray2);
+imshow(imgray2);    
 hold on;
-scatter(uv_fromd2g(:,1),uv_fromd2g(:,2),'*');
+scatter(uv_fromd2g(:,1),uv_fromd2g(:,2),'*')    ;
 %%
 %recompute R and T using the model with more inliers?
 [d,xx,tr]=procrustes(xyz_keypts1(best_inliers,:),xyz_keypts2(best_inliers,:),'scaling',false,'reflection',false);
 
 %%
 %ver se isto está alguma coisa de jeito
-d=dir('D:\MEEC\4ºano\PIV\Project\NewData\maizena4\data_rgb\rgb_image1_*'); 
-i=1;
-im1=imread(['D:\MEEC\4ºano\PIV\Project\NewData\maizena4\data_rgb\rgb_image1_' d(i).name(12:end-3) 'png']);
-    im2=imread(['D:\MEEC\4ºano\PIV\Project\NewData\maizena4\data_rgb\rgb_image2_' d(i).name(12:end-3) 'png']);
-    load(['D:\MEEC\4ºano\PIV\Project\NewData\maizena4\data_rgb\depth1_' d(i).name(12:end-3) 'mat'])
+d=dir('D:\MEEC\4ºano\PIV\Project\NewData\lab1\rgb_image1_*'); 
+i=17;
+im1=imread(['D:\MEEC\4ºano\PIV\Project\NewData\lab1\rgb_image1_' d(i).name(12:end-3) 'png']);
+    im2=imread(['D:\MEEC\4ºano\PIV\Project\NewData\lab1\rgb_image2_' d(i).name(12:end-3) 'png']);
+    load(['D:\MEEC\4ºano\PIV\Project\NewData\lab1\depth1_' d(i).name(12:end-3) 'mat'])
     dep1=depth_array;
-    load(['D:\MEEC\4ºano\PIV\Project\NewData\maizena4\data_rgb\depth2_' d(i).name(12:end-3) 'mat'])
+    load(['D:\MEEC\4ºano\PIV\Project\NewData\lab1\depth2_' d(i).name(12:end-3) 'mat'])
     dep2=depth_array;
-    xyz1_=get_xyzasus(dep1(:),[480 640],(1:640*480)', Depth_cam.K,1,0);
-    xyz2_=get_xyzasus(dep2(:),[480 640],(1:640*480)', Depth_cam.K,1,0);
-    rgbd1 = get_rgbd(xyz1_, im1, R_d_to_rgb, T_d_to_rgb, RGB_cam.K);
-    rgbd2 = get_rgbd(xyz2_, im2, R_d_to_rgb, T_d_to_rgb, RGB_cam.K);
-    pc1=pointCloud(xyz1,'Color',reshape(rgbd1,[480*640 3]));
-    pc2=pointCloud(xyz2*tr.T+ones(length(xyz2_),1)*tr.c(1,:),'Color',reshape(rgbd2,[480*640 3]));
+    xyz1pc=get_xyzasus(dep1(:),[480 640],(1:640*480)', Depth_cam.K,1,0);
+    xyz2pc=get_xyzasus(dep2(:),[480 640],(1:640*480)', Depth_cam.K,1,0);
+    rgbd1 = get_rgbd(xyz1pc, im1, R_d_to_rgb, T_d_to_rgb, RGB_cam.K);
+    rgbd2 = get_rgbd(xyz2pc, im2, R_d_to_rgb, T_d_to_rgb, RGB_cam.K);
+    pc1=pointCloud(xyz1pc,'Color',reshape(rgbd1,[480*640 3]));
+    pc2=pointCloud(xyz2pc*tr.T+ones(length(xyz2pc),1)*tr.c(1,:),'Color',reshape(rgbd2,[480*640 3]));
 
     figure;
     pcshow(pcmerge(pc1,pc2,0.001));
     drawnow;
 
-    
+ %%
+error=xyz_keypts1(best_inliers,:)-(tr.b*xyz_keypts2(best_inliers,:)*tr.T+ones(length(xyz_keypts2(best_inliers,:)),1)*tr.c(1,:)); %distance between all keypoints
+error=sqrt(sum(error.^2,2));
+figure;
+histogram(error);

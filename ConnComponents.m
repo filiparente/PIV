@@ -4,8 +4,8 @@ function [newxyz] = ConnComponents(xyz,knn,edgethreshold,counts_size,mst_grid)
 % edgethreshold - threshold for the edge size
 % counts_size - threshold for the number of points in each object
 
-paux=pointCloud(xyz);
-paux=pcdownsample(paux,'gridAverage',mst_grid);  
+p=pointCloud(xyz);
+paux=pcdownsample(p,'gridAverage',mst_grid);  
 xyzaux=paux.Location;
 % length(xyzaux)
 
@@ -21,15 +21,24 @@ for i=1:length(IDX(:,1))
         Adj(IDX(i,j),i)=Adj(i,IDX(i,j)); %because the matrix is symmetric
    end   
 end
+
+clear IDX;
+clear Dist;
+tf = issymmetric(Adj)
 gdist=graph(Adj); %obtaining the graph
 
 [Tree,pred]=minspantree(gdist,'Method','sparse','Type','forest'); %type forest to calculate the minimum spanning tree of all connected components in the graph
+
+clear gdist;
+clear Adj;
+
 junk=find(Tree.Edges.Weight >edgethreshold);
 if(junk)
     Tree=rmedge(Tree,junk); %removing big edges 
 end
 binx=conncomp(Tree,'OutputForm','cell');   %bin numbers indicate which component each node in the graph belongs to
 
+clear Tree;
 %removing small connected components
 for(i=1:length(binx))
     if length(binx{i})<minsize

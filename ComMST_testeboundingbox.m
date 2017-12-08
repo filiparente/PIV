@@ -45,7 +45,7 @@ d=dir('D:\MEEC\4ºano\PIV\Project\NewData\lab1\rgb_image1_*'); %getting all the f
     bg1q=quantile(imgs1,0.6,3);
     bg2q=quantile(imgs2,0.6,3);
 
-
+%%
 %variables declaration 
 %values for part1
 bg_threshold=70; %threshold use to remove background
@@ -74,14 +74,14 @@ row = {};
 col={};
 goodxyz = {};
 limits=cell(length(d),2); %limits of the box (xmin,xmax,ymin,ymax,zmin,zmax)
-goodxyz21 = {};
+
+%%
 [R T]= RT_c2toc1(peak_thresh,edge_thresh, match_thresh, ransac_thresh, Ninter_ransac,imgray1,imgray2, bg1q, bg2q)
 
 
 %%
-
-for i = 1:length(d)
-
+%for i = 1:length(d)
+i=5;
     fg1q = abs(imgs1(:,:,i)-bg1q)> bg_threshold; %returns 0 or 1   
     fg2q = abs(imgs2(:,:,i)-bg2q)> bg_threshold; %returns 0 or 1
     
@@ -115,12 +115,16 @@ for i = 1:length(d)
     %getting the limits of the box for each object
     cam=1;
     for k=1:length(goodxyz)
-            limits{i,cam}{k}(1)=min(goodxyz{k}(:,1));
-            limits{i,cam}{k}(2)=max(goodxyz{k}(:,1));
-            limits{i,cam}{k}(3)=min(goodxyz{k}(:,2));
-            limits{i,cam}{k}(4)=max(goodxyz{k}(:,2));
-            limits{i,cam}{k}(5)=min(goodxyz{k}(:,3));
-            limits{i,cam}{k}(6)=max(goodxyz{k}(:,3));
+        
+            [~,cornerpoints,~,~,~] = minboundbox(goodxyz{k}(:,1),goodxyz{k}(:,2),goodxyz{k}(:,3))
+            limits{i,cam}{k}=cornerpoints;
+%         
+%             limits{i,cam}{k}(1)=min(goodxyz{k}(:,1));
+%             limits{i,cam}{k}(2)=max(goodxyz{k}(:,1));
+%             limits{i,cam}{k}(3)=min(goodxyz{k}(:,2));
+%             limits{i,cam}{k}(4)=max(goodxyz{k}(:,2));
+%             limits{i,cam}{k}(5)=min(goodxyz{k}(:,3));
+%             limits{i,cam}{k}(6)=max(goodxyz{k}(:,3));
     end
    
     %clearing variables
@@ -128,12 +132,17 @@ for i = 1:length(d)
     goodxyz=[]; 
     row=[];
     col=[];
-    
-   % doing the same for cam2
+   
     L2 = bwlabel(bw2);
     counts2=histcounts(L2(:));  % counts for the labels
     %finding object with counts above region_counts
     labelobj2=find(counts2(2:end)>region_counts); %we start counts1 in index 2 because index 1 corresponds to background
+    
+%     
+% %     % to see the images while the program is running
+%     imagesc(L2);
+%     %colormap(gray);
+%     pause(1);
     
     % the 3D coordinates of each pixel 
     for k=1:length(labelobj2) %starting in index 2 because 1 corresponds to the background
@@ -155,21 +164,22 @@ for i = 1:length(d)
     
     %getting the limits of the box for each object
     cam=2;
-    
     for k=1:length(goodxyz)
-            goodxyz21{k}=goodxyz{k}*R+ones(length(goodxyz{k}),1)*T(1,:);
-            limits{i,cam}{k}(1)=min(goodxyz21{k}(:,1));
-            limits{i,cam}{k}(2)=max(goodxyz21{k}(:,1));
-            limits{i,cam}{k}(3)=min(goodxyz21{k}(:,2));
-            limits{i,cam}{k}(4)=max(goodxyz21{k}(:,2));
-            limits{i,cam}{k}(5)=min(goodxyz21{k}(:,3));
-            limits{i,cam}{k}(6)=max(goodxyz21{k}(:,3));
+
+            [~,cornerpoints,~,~,~] = minboundbox(goodxyz{k}(:,1),goodxyz{k}(:,2),goodxyz{k}(:,3))
+            limits{i,cam}{k}=cornerpoints;
+            
+%             limits{i,cam}{k}(1)=min(goodxyz{k}(:,1));
+%             limits{i,cam}{k}(2)=max(goodxyz{k}(:,1));
+%             limits{i,cam}{k}(3)=min(goodxyz{k}(:,2));
+%             limits{i,cam}{k}(4)=max(goodxyz{k}(:,2));
+%             limits{i,cam}{k}(5)=min(goodxyz{k}(:,3));
+%             limits{i,cam}{k}(6)=max(goodxyz{k}(:,3));
     end
    
     %clearing variables
     xyz=[];
-    goodxyz=[];
-    goodxyz21=[];
+    goodxyz=[]; 
     row=[];
     col=[];   
 %  
@@ -180,33 +190,18 @@ for i = 1:length(d)
     
 
     
-end
+%end
 
-%%
 
-finalbox=cell(length(d),1);
-
-for img = 1:length(d)
-    %checking if objects intercep
-    finalbox{img}={};
-    for obj1=1:length(limits{img,1})
-        for obj2=1:length(limits{img,2})
-
-            [bool,p]= IsIntercept(limits{img,1}{obj1},limits{img,2}{obj2});
-            if(bool==1)
-                finalbox{img} = [finalbox{img} p];
-            end        
-        end       
-    end
-end
 
 
 
 %% testing
 img=10;
+cam=1;
 obj=1;  
 i=img;
-xmin=finalobj{img,cam}{1,obj}(1);
+xmin=limits{img,cam}{1,obj}(1);
             xmax=limits{img,cam}{1,obj}(2);
             ymin=limits{img,cam}{1,obj}(3);
             ymax=limits{img,cam}{1,obj}(4);
@@ -310,67 +305,4 @@ cam=1;
        
    end
 %end
-
-%%
-for img=1:length(d)
-            figure
-            im1=imread(['D:\MEEC\4ºano\PIV\Project\NewData\lab1\rgb_image1_' d(img).name(12:end-3) 'png']);
-            load(['D:\MEEC\4ºano\PIV\Project\NewData\lab1\depth1_' d(img).name(12:end-3) 'mat'])
-
-            xyz1=get_xyzasus(depth_array(:),[480 640],1:640*480,Depth_cam.K,1,0);
-            %Compute "virtual image" aligned with depth
-            rgbd1=get_rgbd(xyz1,im1,R_d_to_rgb,T_d_to_rgb,RGB_cam.K);
-            cl1=reshape(rgbd1,480*640,3);
-            p1=pointCloud(xyz1,'Color',cl1);
-            
-            im2=imread(['D:\MEEC\4ºano\PIV\Project\NewData\lab1\rgb_image2_' d(img).name(12:end-3) 'png']);
-            load(['D:\MEEC\4ºano\PIV\Project\NewData\lab1\depth2_' d(img).name(12:end-3) 'mat'])
-
-            xyz2=get_xyzasus(depth_array(:),[480 640],1:640*480,Depth_cam.K,1,0);
-            %Compute "virtual image" aligned with depth
-            rgbd2=get_rgbd(xyz2,im2,R_d_to_rgb,T_d_to_rgb,RGB_cam.K);
-            color2=reshape(rgbd2,480*640,3);
-            p2=pointCloud(xyz2*R+ones(length(xyz2),1)*T(1,:),'Color',color2);
-
-            pcshow(pcmerge(p1,p2,0.001));
-            hold on;
-            
-        for cam=1:2
-            for obj=1:length(limits{img,cam})
-                xmin=limits{img,cam}{1,obj}(1);
-                xmax=limits{img,cam}{1,obj}(2);
-                ymin=limits{img,cam}{1,obj}(3);
-                ymax=limits{img,cam}{1,obj}(4);
-                zmin=limits{img,cam}{1,obj}(5);
-                zmax=limits{img,cam}{1,obj}(6);
-
-                
-                if(cam==2)
-                   %transfer the points of the box of cam2 to cam1
-                   %matrix with the points of the corners of the box in
-                   %each column
-                   P_cam2 = [ xmin xmin xmin xmin xmax xmax xmax xmax; ymin ymin ymax ymax ymin ymin ymax ymax; zmin zmax zmin zmax zmin zmax zmin zmax];
-                   P_cam12 = P_cam2'*R + ones(8,1)*T(1,:);   
-                   region=P_cam12;
-                 else
-                         region=[ xmin ymin zmin;
-                        xmin ymin zmax;
-                        xmin ymax zmin;
-                        xmin ymax zmax;
-                        xmax ymin zmin;
-                        xmax ymin zmax;
-                        xmax ymax zmin;
-                        xmax ymax zmax];
-                
-                end
-                
-                region_color=[255 0 0];
-                color=[repmat(region_color,8,1)];
-                plot(alphaShape(region),'FaceColor', 'none', 'FaceAlpha',1.0);
-                hold on;
-             end
-          end
-                pause(1); 
- end
-
 
