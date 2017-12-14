@@ -30,25 +30,25 @@ d=dir('D:\MEEC\4ºano\PIV\Project\NewData\lab1\rgb_image1_*'); %getting all the f
         im2=rgb2gray(imread(['D:\MEEC\4ºano\PIV\Project\NewData\lab1\rgb_image2_' d(i).name(12:end-3) 'png']));
         ims2=[ims2 im2(:)];
         load(['D:\MEEC\4ºano\PIV\Project\NewData\lab1\depth1_' d(i).name(12:end-3) 'mat'])
-        imgs1(:,:,i) = double(depth_array);
+        imgs1(:,:,i) = ReplaceZeros(double(depth_array));
         load(['D:\MEEC\4ºano\PIV\Project\NewData\lab1\depth2_' d(i).name(12:end-3) 'mat'])
-        imgs2(:,:,i) = double(depth_array);
+        imgs2(:,:,i) = ReplaceZeros(double(depth_array));
     end
-
+%%
     %medim1=median(double(ims1),2);
     %medim2=median(double(ims2),2);
-    medim1=quantile(double(ims1),0.6,2);
-    medim2=quantile(double(ims2),0.6,2);
+    medim1=quantile(double(ims1),0.75,2);
+    medim2=quantile(double(ims2),0.75,2);
     imgray1=(uint8(reshape(medim1,[480 640])));
     imgray2=(uint8(reshape(medim2,[480 640])));
 
-    bg1q=quantile(imgs1,0.6,3);
-    bg2q=quantile(imgs2,0.6,3);
+    bg1q=quantile(imgs1,0.75,3);
+    bg2q=quantile(imgs2,0.75,3);
 
-
+%%
 %variables declaration 
 %values for part1
-bg_threshold=70; %threshold use to remove background
+bg_threshold=150; %threshold use to remove background
 region_counts=2600; %threshold used to eliminate objects with small nr of pixels
 z_cut=5000; 
 knn=10; %number of nearest neighbours used in knnsearch
@@ -89,8 +89,7 @@ for i = 1:length(d)
     bw1=RemoveSmallObjs(imgs1(:,:,i),fg1q,z_cut);
     bw2=RemoveSmallObjs(imgs2(:,:,i),fg2q,z_cut);
     
-    L1 = bwlabel(bw1);  
-    
+    L1 = bwlabel(bw1);    
     counts1=histcounts(L1(:));  % counts for the labels
     %finding object with counts above region_counts
     labelobj1=find(counts1(2:end)>region_counts); %we start counts1 in index 2 because index 1 corresponds to background
@@ -187,18 +186,92 @@ end
 finalbox=cell(length(d),1);
 
 for img = 1:length(d)
-    %checking if objects intercep
+    %checking if objects intercept
     finalbox{img}={};
     for obj1=1:length(limits{img,1})
+        
+        bool=0;
         for obj2=1:length(limits{img,2})
+            [bool,p]= IsIntercept(limits{img,1}{obj1},limits{img,2}{obj2});
+            if(bool==1)
+                finalbox{img} = [finalbox{img} p]; %if they intercept, new box is the interception
+                break;
+            end        
+        end       
+        if(bool==0)
+            finalbox{img} = [finalbox{img} limits{img,1}{obj1}]; %object doesnt intercept with any obj in img2
+        end
+    end
+    
+    %checking if there are more objs in img2 that dont intercept 
+    for obj2=1:length(limits{img,2})
+        bool=0;
+        for obj1=1:length(limits{img,1})
 
             [bool,p]= IsIntercept(limits{img,1}{obj1},limits{img,2}{obj2});
             if(bool==1)
-                finalbox{img} = [finalbox{img} p];
+               break; 
             end        
-        end       
+        end  
+        
+        if(bool==0)
+            finalbox{img} = [finalbox{img} limits{img,2}{obj2}];%when there is an object in img1 but not in img2
+        end
     end
+    
 end
+
+%% testar junção entre camaras e caixas
+
+for img=1:length(d)
+
+            figure
+            im1=imread(['D:\MEEC\4ºano\PIV\Project\NewData\lab1\rgb_image1_' d(img).name(12:end-3) 'png']);
+            load(['D:\MEEC\4ºano\PIV\Project\NewData\lab1\depth1_' d(img).name(12:end-3) 'mat'])
+
+            xyz1=get_xyzasus(depth_array(:),[480 640],1:640*480,Depth_cam.K,1,0);
+            %Compute "virtual image" aligned with depth
+            rgbd1=get_rgbd(xyz1,im1,R_d_to_rgb,T_d_to_rgb,RGB_cam.K);
+            cl1=reshape(rgbd1,480*640,3);
+            p1=pointCloud(xyz1,'Color',cl1);
+            
+            im2=imread(['D:\MEEC\4ºano\PIV\Project\NewData\lab1\rgb_image2_' d(img).name(12:end-3) 'png']);
+            load(['D:\MEEC\4ºano\PIV\Project\NewData\lab1\depth2_' d(img).name(12:end-3) 'mat'])
+
+            xyz2=get_xyzasus(depth_array(:),[480 640],1:640*480,Depth_cam.K,1,0);
+            %Compute "virtual image" aligned with depth
+            rgbd2=get_rgbd(xyz2,im2,R_d_to_rgb,T_d_to_rgb,RGB_cam.K);
+            color2=reshape(rgbd2,480*640,3);
+            p2=pointCloud(xyz2*R+ones(length(xyz2),1)*T(1,:),'Color',color2);
+
+            pcshow(pcmerge(p1,p2,0.001));
+            hold on;
+            
+            
+        for obj=1:length(finalbox{img})
+                xmin=finalbox{img}{1,obj}(1);
+                xmax=finalbox{img}{1,obj}(2);
+                ymin=finalbox{img}{1,obj}(3);
+                ymax=finalbox{img}{1,obj}(4);
+                zmin=finalbox{img}{1,obj}(5);
+                zmax=finalbox{img}{1,obj}(6);
+            
+           region=[ xmin ymin zmin;
+                        xmin ymin zmax;
+                        xmin ymax zmin;
+                        xmin ymax zmax;
+                        xmax ymin zmin;
+                        xmax ymin zmax;
+                        xmax ymax zmin;
+                        xmax ymax zmax];
+                                                         
+                region_color=[255 0 0];
+                color=[repmat(region_color,8,1)];
+                plot(alphaShape(region),'FaceColor', 'none', 'FaceAlpha',1.0);
+                hold on;
+        end
+    pause(1); 
+ end
 
 
 

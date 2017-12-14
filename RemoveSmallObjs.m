@@ -7,8 +7,8 @@ function bw  = RemoveSmallObjs(img,fg,zmax)
     end
     
     %removing small objects
-    SE = strel('disk',5);
-    bw= imerode(fg,SE);
+    SE = strel('disk',5); 
+    bw= imerode(fg,SE); 
     bw= imdilate(bw,SE);
    %  SE = strel('disk',5);
    % bw=imerode(bw,SE); % <--- SÓ PARA TESTAR

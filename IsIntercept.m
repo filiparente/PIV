@@ -1,9 +1,5 @@
 function [bool,p] = IsIntercept(limits1, limits2)
 
-    limits1(3)
-    limits2(4) 
-    limits1(4)
-    limits2(3)
    p=[];
    bool=1;
    if limits1(1) > limits2(2) | limits1(2) < limits2(1) %check x    
